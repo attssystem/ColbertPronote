@@ -1,5 +1,6 @@
 package pronote.colbert.fliife.com.colbertpronote;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -15,10 +16,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
+
+    public String PREFS_NAME = "CONTENT";
+    public String[] arrayContent;
+    public String[] arrayTitle;
+    public String[] arrayDate;
     private RecyclerView.LayoutManager mLayoutManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +54,29 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        setRecyclerContent(new String[]{"Mathématiques", "Anglais"},
-                new String[]{"Devoir Maison n°1", "Interro de vocabulaire"},
-                new String[]{"Aujourd'hui", "Demain"});
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        String emptyArray = "";
+        try {
+             emptyArray = ObjectSerializer.serialize(new ArrayList<String>());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String contents = settings.getString("content", emptyArray);
+        String titles = settings.getString("title", emptyArray);
+        String dates = settings.getString("date", emptyArray);
+        try {
+
+            arrayContent = new String[((ArrayList<String>) ObjectSerializer.deserialize(contents)).size()];
+            arrayContent = ((ArrayList<String>) ObjectSerializer.deserialize(contents)).toArray(arrayContent);
+            arrayTitle = new String[((ArrayList<String>) ObjectSerializer.deserialize(titles)).size()];
+            arrayTitle = ((ArrayList<String>) ObjectSerializer.deserialize(titles)).toArray(arrayTitle);
+            arrayDate = new String[((ArrayList<String>) ObjectSerializer.deserialize(dates)).size()];
+            arrayDate = ((ArrayList<String>) ObjectSerializer.deserialize(dates)).toArray(arrayTitle);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        setRecyclerContent(arrayTitle, arrayContent, arrayDate);
     }
 
     @Override
@@ -90,9 +119,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_cdt) {
-            setRecyclerContent(new String[]{"Mathématiques", "Anglais"},
-                    new String[]{"Devoir Maison n°1", "Interro de vocabulaire"},
-                    new String[]{"Aujourd'hui", "Demain"});
+            setRecyclerContent(arrayTitle, arrayContent, arrayDate);
         } else if (id == R.id.nav_today) {
             setRecyclerContent(new String[]{"8h", "10h"},
                     new String[]{"Histoire-géographie", "Mathématiques"},

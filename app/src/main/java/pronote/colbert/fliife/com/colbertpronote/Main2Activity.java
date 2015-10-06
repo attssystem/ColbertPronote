@@ -1,16 +1,26 @@
 package pronote.colbert.fliife.com.colbertpronote;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class Main2Activity extends AppCompatActivity {
     public WebView webview;
     public boolean assumeLoggedIn = false;
+    public String PREFS_NAME = "CONTENT";
+
+    public ArrayList<String> arrayTitle = new ArrayList<>();
+    public ArrayList<String> arrayDate = new ArrayList<>();
+    public ArrayList<String> arrayContent = new ArrayList<>();
+
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -21,8 +31,19 @@ public class Main2Activity extends AppCompatActivity {
         class HTMLGetInterface{
 
             @JavascriptInterface
-            public void showHTML(String html) {
-                Toast.makeText(getApplicationContext(), html, Toast.LENGTH_SHORT).show();
+            public void saveData(String date, String title, String content) {
+                arrayDate.add(date);
+                arrayTitle.add(title);
+                arrayContent.add(content);
+            }
+
+            @JavascriptInterface
+            public void done(){
+                try {
+                    save();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
         }
@@ -57,8 +78,17 @@ public class Main2Activity extends AppCompatActivity {
         System.out.println("fired");
 
         //webview.loadUrl("javascript:setTimeout(function(){htmlViewer.showHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');},5000);");
-        webview.loadUrl("javascript:setTimeout(function(){for(var alldiv=document.getElementsByTagName(\"div\"),divHTML=alldiv[111].outerHTML.replace(alldiv[111].innerHTML,\"\"),requiredDiv='<div data-theme=\"a\" style=\"margin:10px;background-color:#efefef\" class=\"masquerTransition boxShadow\">',cdtdiv,i=0;i<alldiv.length;i++){var outHTML=alldiv[i].outerHTML.replace(alldiv[i].innerHTML,\"\").replace(\"</div>\",\"\");outHTML.indexOf(requiredDiv)>-1&&(cdtdiv=alldiv[i])}cdtdiv.removeChild(cdtdiv.getElementsByTagName(\"div\")[0]),alldiv=cdtdiv.getElementsByTagName(\"div\");for(var i=0;i<alldiv.length;i++)0===alldiv[i].innerHTML.indexOf(\"pour\")&&htmlViewer.showHTML(alldiv[i].innerHTML);},2000);");
+        webview.loadUrl("javascript:setTimeout(function(){for(var arrayDate=[],arrayTitle=[],arrayContent=[],alldiv=document.getElementsByTagName(\"div\"),requiredDiv='<div data-theme=\"a\" style=\"margin:10px;background-color:#efefef\" class=\"masquerTransition boxShadow\">',cdtdiv=null,i=0;i<alldiv.length;i++){var outHTML=alldiv[i].outerHTML.replace(alldiv[i].innerHTML,\"\").replace(\"</div>\",\"\");outHTML.indexOf(requiredDiv)>-1&&(cdtdiv=alldiv[i])}alldiv=cdtdiv.getElementsByTagName(\"div\");for(var i=0;i<alldiv.length;i++){var concernedDiv=alldiv[i];if(0===alldiv[i].innerHTML.indexOf(\"pour\")){var currentDate=alldiv[i].innerHTML;concernedDiv=alldiv[i+1];for(var j=0;j<concernedDiv.getElementsByTagName(\"div\").length;j++)if(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\").length>0){arrayDate.push(currentDate),arrayTitle.push(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].innerHTML);var parentDiv=concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].parentElement;parentDiv.removeChild(parentDiv.getElementsByClassName(\"Gras\")[0]);var contentString=parentDiv.innerHTML;contentString=contentString.replace(/<(?:.|\\n)*?>/gm,\"\"),arrayContent.push(contentString)}}}for(var l=0;l<arrayTitle.length;l++)htmlViewer.saveData(arrayDate[l],arrayTitle[l],arrayContent[l]);htmlViewer.done();},1500);");
 
+    }
+
+    public void save() throws IOException {
+        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
+
+        editor.putString("content", ObjectSerializer.serialize(arrayContent));
+        editor.putString("title", ObjectSerializer.serialize(arrayTitle));
+        editor.putString("date", ObjectSerializer.serialize(arrayDate));
+        editor.apply();
     }
 
 }
