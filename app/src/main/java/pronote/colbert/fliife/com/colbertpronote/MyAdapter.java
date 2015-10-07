@@ -50,8 +50,21 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
+        String[] tempContent = mContent;
+        while((tempContent[position].charAt(0) == " ".charAt(0)) || (tempContent[position].charAt(0) == "\n".charAt(0))){
+            tempContent[position] = tempContent[position].substring(1);
+        }
+        while((tempContent[position].charAt(tempContent[position].length()-1) == " ".charAt(0)) || (tempContent[position].charAt(tempContent[position].length()-1) == "\n".charAt(0))){
+            tempContent[position] = tempContent[position].substring(0, tempContent[position].length()-2);
+        }
+        mMatter[position] = mMatter[position].replace("&nbsp;", " ");
+        mMatter[position] = mMatter[position].replace("&amp;", "&");
+        mClass[position] = mClass[position].replace("&nbsp;", " ");
+        mClass[position] = mClass[position].replace("&amp;", "&");
+        mContent[position] = mContent[position].replace("&nbsp;", " ");
+        mContent[position] = mContent[position].replace("&amp;", "&");
         holder.mTextViewTitle.setText(mMatter[position]);
-        holder.mTextViewContent.setText(mContent[position]);
+        holder.mTextViewContent.setText(tempContent[position]);
         holder.mTextViewClass.setText(mClass[position]);
 
     }
