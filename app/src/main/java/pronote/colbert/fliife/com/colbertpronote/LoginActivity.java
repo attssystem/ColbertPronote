@@ -51,9 +51,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        SharedPreferences creds = getSharedPreferences("credentials", Context.MODE_PRIVATE);
+        mEmailView.setText(creds.getString("username", ""));
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
+
+        mPasswordView.setText(creds.getString("password", ""));
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {

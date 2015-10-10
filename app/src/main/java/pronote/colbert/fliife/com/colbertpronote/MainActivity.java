@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,6 +41,12 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<String> arrayContentSync = new ArrayList<>();
     private String username = "";
     private String password = "";
+    private ArrayList<String> arrayClassTodaySync = new ArrayList<>();
+    private ArrayList<String> arraySubjectTodaySync = new ArrayList<>();
+    private ArrayList<String> arrayHoursTodaySync = new ArrayList<>();
+    private String[] arrayClassToday;
+    private String[] arrayHoursToday;
+    private String[] arraySubjectToday;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +54,9 @@ public class MainActivity extends AppCompatActivity
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         if(settings.getBoolean("firstLaunch", true)){
+
             Intent login = new Intent(this, LoginActivity.class);
-            startActivity(login);
+            startActivityForResult(login, 1);
             settings.edit().putBoolean("firstLaunch", false).apply();
         }
         setContentView(R.layout.activity_main);
@@ -58,7 +66,7 @@ public class MainActivity extends AppCompatActivity
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refreshEntries();
+                refreshEntries(0);
             }
         });
 
@@ -67,9 +75,14 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
-                startActivity(loginIntent);
+                startActivityForResult(loginIntent, 1);
             }
         });
+
+        setRecyclerContent(new String[]{}, new String[]{}, new String[]{});
+        SharedPreferences sp = getSharedPreferences("credentials", Context.MODE_PRIVATE);
+        password = sp.getString("password", "");
+        username = sp.getString("username", "");
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -80,40 +93,78 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        refreshEntries();
+        refreshEntries(1);
+        if(!TextUtils.isEmpty(username) &&  !TextUtils.isEmpty(password)){
+            refreshEntries(0);
+        }
+
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request it is that we're responding to
+        if (requestCode == 1) {
+
+            SharedPreferences sp = getSharedPreferences("credentials", Context.MODE_PRIVATE);
+            password = sp.getString("password", "");
+            username = sp.getString("username", "");
+            refreshEntries(0);
+
+        }
     }
 
-    private void refreshEntries() {
+    private void refreshEntries(int step) {
+
         if(webview != null){
             webview.destroy();
+            webview = null;
         }
+        if(step == 0) {
+            mSwipeRefreshLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSwipeRefreshLayout.setRefreshing(true);
+                }
+            });
+            sync();
+        }else if(step == 1) {
+            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+            String emptyArray = "";
+            try {
+                emptyArray = ObjectSerializer.serialize(new ArrayList<String>());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String contents = settings.getString("content", emptyArray);
+            String titles = settings.getString("title", emptyArray);
+            String dates = settings.getString("date", emptyArray);
+            String subject = settings.getString("subject", emptyArray);
+            String hours = settings.getString("hours", emptyArray);
+            String claSs = settings.getString("class", emptyArray);
+            try {
 
-        sync();
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        String emptyArray = "";
-        try {
-            emptyArray = ObjectSerializer.serialize(new ArrayList<String>());
-        } catch (IOException e) {
-            e.printStackTrace();
+                arrayContent = new String[((ArrayList<String>) ObjectSerializer.deserialize(contents)).size()];
+                arrayContent = ((ArrayList<String>) ObjectSerializer.deserialize(contents)).toArray(arrayContent);
+                arrayTitle = new String[((ArrayList<String>) ObjectSerializer.deserialize(titles)).size()];
+                arrayTitle = ((ArrayList<String>) ObjectSerializer.deserialize(titles)).toArray(arrayTitle);
+                arrayDate = new String[((ArrayList<String>) ObjectSerializer.deserialize(dates)).size()];
+                arrayDate = ((ArrayList<String>) ObjectSerializer.deserialize(dates)).toArray(arrayDate);
+
+                // THIS CODE IS AWFUL. I DON'T KNOW HOW ELSE I CAN SAVE ARRAYS TO MEMORY. PS: I know the Caps. Lock key.
+
+                arraySubjectToday = new String[((ArrayList<String>) ObjectSerializer.deserialize(subject)).size()];
+                arraySubjectToday = ((ArrayList<String>) ObjectSerializer.deserialize(subject)).toArray(arraySubjectToday);
+                arrayHoursToday = new String[((ArrayList<String>) ObjectSerializer.deserialize(hours)).size()];
+                arrayHoursToday = ((ArrayList<String>) ObjectSerializer.deserialize(hours)).toArray(arrayHoursToday);
+                arrayClassToday = new String[((ArrayList<String>) ObjectSerializer.deserialize(claSs)).size()];
+                arrayClassToday = ((ArrayList<String>) ObjectSerializer.deserialize(claSs)).toArray(arrayClassToday);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            setRecyclerContent(arrayTitle, arrayContent, arrayDate);
+
+            mSwipeRefreshLayout.setRefreshing(false);
         }
-        String contents = settings.getString("content", emptyArray);
-        String titles = settings.getString("title", emptyArray);
-        String dates = settings.getString("date", emptyArray);
-        try {
-
-            arrayContent = new String[((ArrayList<String>) ObjectSerializer.deserialize(contents)).size()];
-            arrayContent = ((ArrayList<String>) ObjectSerializer.deserialize(contents)).toArray(arrayContent);
-            arrayTitle = new String[((ArrayList<String>) ObjectSerializer.deserialize(titles)).size()];
-            arrayTitle = ((ArrayList<String>) ObjectSerializer.deserialize(titles)).toArray(arrayTitle);
-            arrayDate = new String[((ArrayList<String>) ObjectSerializer.deserialize(dates)).size()];
-            arrayDate = ((ArrayList<String>) ObjectSerializer.deserialize(dates)).toArray(arrayDate);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        setRecyclerContent(arrayTitle, arrayContent, arrayDate);
-
-        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     private void sync() {
@@ -121,6 +172,9 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences sp = getSharedPreferences("credentials", Context.MODE_PRIVATE);
         password = sp.getString("password", "");
         username = sp.getString("username", "");
+
+        System.out.println("Using username: " + username);
+        System.out.println("Using password: " + password);
 
         webview = new WebView(this);
         class HTMLGetInterface{
@@ -133,6 +187,16 @@ public class MainActivity extends AppCompatActivity
                 System.out.println("Added title " + title);
                 arrayContentSync.add(content);
                 System.out.println("Added content " + content);
+            }
+
+            @JavascriptInterface
+            public void saveDataToday(String claSs, String hours, String subject){
+                arrayClassTodaySync.add(claSs);
+                System.out.println("Added claSs " + claSs);
+                arrayHoursTodaySync.add(hours);
+                System.out.println("Added hours " + hours);
+                arraySubjectTodaySync.add(subject);
+                System.out.println("Added subject " + subject);
             }
 
             @JavascriptInterface
@@ -162,6 +226,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public boolean CDTDone = false;
+    public boolean gotToday = false;
     public void login(){
         webview.setWebViewClient(new WebViewClient() {
 
@@ -170,9 +235,12 @@ public class MainActivity extends AppCompatActivity
                 if (!assumeLoggedIn) {
                     view.loadUrl("javascript:var logInterval=setInterval(function(){null!==document.getElementById(\"zoneIdent\")&&null!==document.getElementById(\"zonePwd\")&&(document.getElementById(\"zoneIdent\").value=\"" + username + "\",document.getElementById(\"zonePwd\").value=\"" + password + "\",GInterface.traiterEvenementValidation(),clearInterval(logInterval))},500);");
                     assumeLoggedIn = true;
-                } else if(!CDTDone){
+                } else if (!CDTDone) {
                     getCDT();
                     CDTDone = true;
+                } else if (!gotToday) {
+                    //getToday();
+                    gotToday = true;
                 }
 
             }
@@ -184,11 +252,16 @@ public class MainActivity extends AppCompatActivity
 
     public void getCDT(){
         System.out.println("Getting homeworks");
-        System.out.println("fired");
 
         //webview.loadUrl("javascript:setTimeout(function(){htmlViewer.showHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');},5000);");
-        webview.loadUrl("javascript:setTimeout(function(){for(var arrayDate=[],arrayTitle=[],arrayContent=[],alldiv=document.getElementsByTagName(\"div\"),requiredDiv='<div data-theme=\"a\" style=\"margin:10px;background-color:#efefef\" class=\"masquerTransition boxShadow\">',cdtdiv=null,i=0;i<alldiv.length;i++){var outHTML=alldiv[i].outerHTML.replace(alldiv[i].innerHTML,\"\").replace(\"</div>\",\"\");outHTML.indexOf(requiredDiv)>-1&&(cdtdiv=alldiv[i])}alldiv=cdtdiv.getElementsByTagName(\"div\");for(var i=0;i<alldiv.length;i++){var concernedDiv=alldiv[i];if(0===alldiv[i].innerHTML.indexOf(\"pour\")){var currentDate=alldiv[i].innerHTML;concernedDiv=alldiv[i+1];for(var j=0;j<concernedDiv.getElementsByTagName(\"div\").length;j++)if(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\").length>0){arrayDate.push(currentDate),arrayTitle.push(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].innerHTML);var parentDiv=concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].parentElement;parentDiv.removeChild(parentDiv.getElementsByClassName(\"Gras\")[0]);for(var contentString=parentDiv.innerHTML;\" \"===contentString.charAt(0)||\"\\n\"===contentString.charAt(0);)contentString=contentString.substring(1,contentString.length);contentString=contentString.replace(/<a(?:.|\\n)*?>.*?>/gm,\"\"),contentString=contentString.replace(/<(?:.|\\n)*?>/gm,\"\"),contentString=contentString.replace(\"&\",\"&\"),contentString=contentString.replace(\"&nbsp;\",\" \"),arrayContent.push(contentString)}}}for(var l=0;l<arrayTitle.length;l++)htmlViewer.saveData(arrayDate[l],arrayTitle[l],arrayContent[l]);htmlViewer.done();},1750);");
+        webview.loadUrl("javascript:window.gotHomework = false;setTimeout(function(){for(var arrayDate=[],arrayTitle=[],arrayContent=[],alldiv=document.getElementsByTagName(\"div\"),requiredDiv='<div data-theme=\"a\" style=\"margin:10px;background-color:#efefef\" class=\"masquerTransition boxShadow\">',cdtdiv=null,i=0;i<alldiv.length;i++){var outHTML=alldiv[i].outerHTML.replace(alldiv[i].innerHTML,\"\").replace(\"</div>\",\"\");outHTML.indexOf(requiredDiv)>-1&&(cdtdiv=alldiv[i])}alldiv=cdtdiv.getElementsByTagName(\"div\");for(var i=0;i<alldiv.length;i++){var concernedDiv=alldiv[i];if(0===alldiv[i].innerHTML.indexOf(\"pour\")){var currentDate=alldiv[i].innerHTML;concernedDiv=alldiv[i+1];for(var j=0;j<concernedDiv.getElementsByTagName(\"div\").length;j++)if(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\").length>0){arrayDate.push(currentDate),arrayTitle.push(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].innerHTML);var parentDiv=concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].parentElement;parentDiv.removeChild(parentDiv.getElementsByClassName(\"Gras\")[0]);for(var contentString=parentDiv.innerHTML;\" \"===contentString.charAt(0)||\"\\n\"===contentString.charAt(0);)contentString=contentString.substring(1,contentString.length);contentString=contentString.replace(/<a(?:.|\\n)*?>.*?>/gm,\"\"),contentString=contentString.replace(/<(?:.|\\n)*?>/gm,\"\"),contentString=contentString.replace(\"&\",\"&\"),contentString=contentString.replace(\"&nbsp;\",\" \"),arrayContent.push(contentString)}}}for(var l=0;l<arrayTitle.length;l++)htmlViewer.saveData(arrayDate[l],arrayTitle[l],arrayContent[l]);window.gotHomework = true;},2250);");
 
+        getToday();
+    }
+
+    public void getToday(){
+
+        webview.loadUrl("javascript:var todayInterval=setInterval(function(){window.gotHomework&&(console.log(\"getting Today\"),GInterface.Instances[2].Instances[0].idMenuOnglet.surclickOnglet(1,1),setTimeout(function(){for(var e=[],n=[],t=[],o=document.getElementsByClassName(\"BandeCours\"),a=0;a<o.length;a++)for(var r=o[a].getElementsByTagName(\"tr\"),l=0;l<r.length;l++){var s=r[l].getElementsByTagName(\"span\");0!==s.length&&(e.push(s[0].innerHTML+\" - \"+s[1].innerHTML),console.log(s[0].innerHTML+\" - \"+s[1].innerHTML),n.push(s[2].innerHTML.replace(\"&\",\"&\")),console.log(s[2].innerHTML.replace(\"&\",\"&\")),t.push(s[s.length-1].innerHTML),console.log(s[s.length-1].innerHTML))}for(var g=0;g<e.length;g++)htmlViewer.saveDataToday(t[g],e[g],n[g]);setTimeout(function(){htmlViewer.done()},2e3),window.hours=e},3e3),clearInterval(todayInterval))},500);");
     }
 
     public void save() throws IOException {
@@ -197,8 +270,17 @@ public class MainActivity extends AppCompatActivity
         editor.putString("content", ObjectSerializer.serialize(arrayContentSync));
         editor.putString("title", ObjectSerializer.serialize(arrayTitleSync));
         editor.putString("date", ObjectSerializer.serialize(arrayDateSync));
+        editor.putString("subject", ObjectSerializer.serialize(arraySubjectTodaySync));
+        editor.putString("hours", ObjectSerializer.serialize(arrayHoursTodaySync));
+        editor.putString("class", ObjectSerializer.serialize(arrayClassTodaySync));
         editor.apply();
         System.out.println("Done !");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                refreshEntries(1);
+            }
+        });
     }
 
     @Override
@@ -217,8 +299,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_sync) {
-            Intent syncIntent = new Intent(this, SyncActivity.class);
-            startActivity(syncIntent);
+            refreshEntries(0);
             return true;
         }
 
@@ -235,9 +316,9 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_cdt) {
             setRecyclerContent(arrayTitle, arrayContent, arrayDate);
         } else if (id == R.id.nav_today) {
-            setRecyclerContent(new String[]{"8h", "10h"},
-                    new String[]{"Histoire-géographie", "Mathématiques"},
-                    new String[]{"C007", "E309"});
+            setRecyclerContent(arrayHoursToday,
+                    arraySubjectToday,
+                    arrayClassToday);
         } else if (id == R.id.nav_week) {
 
         } else if (id == R.id.nav_share) {
