@@ -15,4 +15,6 @@
     <string name="action_sign_in_short">Se connecter</string>
     <string name="error_invalid_email">Ce nom d\'utilisateur est invalide</string>
     <string name="error_field_required">Ce champs est requis</string>
+    <string name="title_activity_settings">Settings</string>
+
 </resources>

@@ -3,13 +3,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
-        <item android:id="@+id/nav_cdt" android:icon="@android:drawable/ic_menu_agenda"
+        <item android:id="@+id/nav_cdt" android:icon="@drawable/ic_assignment_black_24dp"
             android:title="Cahier de Texte"
             tools:ignore="HardcodedText" />
-        <item android:id="@+id/nav_today" android:icon="@android:drawable/ic_menu_today"
+        <item android:id="@+id/nav_today" android:icon="@drawable/ic_today_black_24dp"
             android:title="Aujourd'hui"
             tools:ignore="HardcodedText" />
-        <item android:id="@+id/nav_week" android:icon="@android:drawable/ic_menu_week"
+        <item android:id="@+id/nav_week" android:icon="@drawable/ic_view_carousel_black_24dp"
             android:title="Emploi du temps"
             tools:ignore="HardcodedText" />
     </group>
@@ -17,9 +17,11 @@
     <item android:title="À propos"
         tools:ignore="HardcodedText">
         <menu>
-            <item android:id="@+id/nav_share" android:icon="@android:drawable/ic_menu_share"
+            <item android:id="@+id/nav_share" android:icon="@drawable/ic_share_black_24dp"
                 android:title="Partager" />
-            <item android:id="@+id/nav_about" android:icon="@android:drawable/ic_menu_info_details"
+            <item android:id="@+id/nav_settings" android:icon="@drawable/ic_settings_black_24dp"
+                android:title="Paramètres" />
+            <item android:id="@+id/nav_about" android:icon="@drawable/ic_info_outline_black_24dp"
                 android:title="À propos" />
         </menu>
     </item>

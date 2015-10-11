@@ -6,10 +6,11 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
     private String[] mMatter;
     private String[] mContent;
     private String[] mClass;
+    private int mBase;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -21,6 +22,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         public TextView mTextViewClass;
         public ViewHolder(RelativeLayout v) {
             super(v);
+
             mTextViewTitle = (TextView) v.findViewById(R.id.title_text);
             mTextViewContent = (TextView) v.findViewById(R.id.content_text);
             mTextViewClass = (TextView) v.findViewById(R.id.top_right_text);
@@ -28,7 +30,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(String[] myMatter, String[] myContent, String[] myClass) {
+    public CardAdapter(String[] myMatter, String[] myContent, String[] myClass, int base) {
+        mBase = base;
         mMatter = myMatter;
         mContent = myContent;
         mClass = myClass;
@@ -36,10 +39,10 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     // Create new views (invoked by the layout manager)
     @Override
-    public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
+    public CardAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                    int viewType) {
         // create a new view
-        RelativeLayout v = (RelativeLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.card_base, parent, false);
+        RelativeLayout v = (RelativeLayout) LayoutInflater.from(parent.getContext()).inflate(mBase, parent, false);
 
         ViewHolder vh = new ViewHolder(v);
         return vh;

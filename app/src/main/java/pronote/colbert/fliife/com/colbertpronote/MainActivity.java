@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +28,9 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public String[] arrayContent;
+    private int LIGHT = 0;
+    private int DARK = 1;
+    public int THEME = LIGHT;
     public String[] arrayTitle;
     public String[] arrayDate;
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -53,23 +55,24 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        THEME = settings.getInt("theme", 0);
         if(settings.getBoolean("firstLaunch", true)){
 
             Intent login = new Intent(this, LoginActivity.class);
             startActivityForResult(login, 1);
             settings.edit().putBoolean("firstLaunch", false).apply();
         }
+        if(THEME == DARK){
+            setTheme(R.style.DarkTheme);
+        }
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.activity_main_swipe_refresh_layout);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshEntries(0);
-            }
-        });
-
+        mSwipeRefreshLayout.setEnabled(false);
+        if(THEME == DARK) {
+            mSwipeRefreshLayout.setBackgroundColor(getResources().getColor(R.color.background_floating_material_dark));
+        }
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,9 +97,6 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         refreshEntries(1);
-        if(!TextUtils.isEmpty(username) &&  !TextUtils.isEmpty(password)){
-            refreshEntries(0);
-        }
 
     }
     @Override
@@ -178,6 +178,8 @@ public class MainActivity extends AppCompatActivity
 
         webview = new WebView(this);
         //TODO: What's happening on the second sync ?
+        //Debug idea : show the webview with the commented code below,
+        // and after the first sync, see what the second do by launching it.
         //DEBUG:setContentView(webview);
         class HTMLGetInterface{
 
@@ -258,7 +260,7 @@ public class MainActivity extends AppCompatActivity
 
     public void getToday(){
 
-        webview.loadUrl("javascript:var todayInterval=setInterval(function(){window.gotHomework&&(console.log(\"getting Today\"),GInterface.Instances[2].Instances[0].idMenuOnglet.surclickOnglet(1,1),setTimeout(function(){for(var e=[],n=[],t=[],o=document.getElementsByClassName(\"BandeCours\"),a=0;a<o.length;a++)for(var r=o[a].getElementsByTagName(\"tr\"),l=0;l<r.length;l++){var s=r[l].getElementsByTagName(\"span\");0!==s.length&&(e.push(s[0].innerHTML+\" - \"+s[1].innerHTML),console.log(s[0].innerHTML+\" - \"+s[1].innerHTML),n.push(s[2].innerHTML.replace(\"&\",\"&\")),console.log(s[2].innerHTML.replace(\"&amp;\",\"&\")),t.push(s[s.length-1].innerHTML),console.log(s[s.length-1].innerHTML))}for(var g=0;g<e.length;g++)htmlViewer.saveDataToday(t[g],e[g],n[g]);setTimeout(function(){htmlViewer.done()},1.75e3)},1e3),clearInterval(todayInterval))},500);");
+        webview.loadUrl("javascript:var todayInterval=setInterval(function(){window.gotHomework&&(console.log(\"getting Today\"),GInterface.Instances[2].Instances[0].idMenuOnglet.surclickOnglet(1,1),setTimeout(function(){for(var e=[],n=[],t=[],o=document.getElementsByClassName(\"BandeCours\"),a=0;a<o.length;a++)for(var r=o[a].getElementsByTagName(\"tr\"),l=0;l<r.length;l++){var s=r[l].getElementsByTagName(\"span\");0!==s.length&&(e.push(s[0].innerHTML+\" - \"+s[1].innerHTML),console.log(s[0].innerHTML+\" - \"+s[1].innerHTML),n.push(s[2].innerHTML.replace(\"&\",\"&\")),console.log(s[2].innerHTML.replace(\"&amp;\",\"&\")),t.push(s[s.length-1].innerHTML),console.log(s[s.length-1].innerHTML))}for(var g=0;g<e.length;g++)htmlViewer.saveDataToday(t[g],e[g],n[g]);setTimeout(function(){htmlViewer.done()},3e3)},2e3),clearInterval(todayInterval))},500);");
     }
 
     public void save() throws IOException {
@@ -329,8 +331,9 @@ public class MainActivity extends AppCompatActivity
             startActivity(Intent.createChooser(sharingIntent, "Partager avec"));
         } else if (id == R.id.nav_about) {
             //TODO: About activity
+        } else if(id == R.id.nav_settings){
+            startActivity(new Intent(this, SettingsActivity.class));
         }
-        //TODO: Settings activity ! Support for Light/Dark Theme, behavior customization.
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -349,7 +352,12 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         // specify an adapter (see also next example)
-        RecyclerView.Adapter mAdapter = new MyAdapter(first, second, third);
+        RecyclerView.Adapter mAdapter;
+        if(THEME == DARK) {
+            mAdapter = new CardAdapter(first, second, third, R.layout.card_base_dark);
+        }else{
+            mAdapter = new CardAdapter(first, second, third, R.layout.card_base_light);
+        }
         mRecyclerView.setAdapter(mAdapter);
     }
 }
