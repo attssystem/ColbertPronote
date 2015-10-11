@@ -177,6 +177,8 @@ public class MainActivity extends AppCompatActivity
         System.out.println("Using password: " + password);
 
         webview = new WebView(this);
+        //TODO: What's happening on the second sync ?
+        //DEBUG:setContentView(webview);
         class HTMLGetInterface{
 
             @JavascriptInterface
@@ -226,7 +228,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public boolean CDTDone = false;
-    public boolean gotToday = false;
     public void login(){
         webview.setWebViewClient(new WebViewClient() {
 
@@ -238,9 +239,6 @@ public class MainActivity extends AppCompatActivity
                 } else if (!CDTDone) {
                     getCDT();
                     CDTDone = true;
-                } else if (!gotToday) {
-                    //getToday();
-                    gotToday = true;
                 }
 
             }
@@ -253,7 +251,6 @@ public class MainActivity extends AppCompatActivity
     public void getCDT(){
         System.out.println("Getting homeworks");
 
-        //webview.loadUrl("javascript:setTimeout(function(){htmlViewer.showHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');},5000);");
         webview.loadUrl("javascript:window.gotHomework = false;setTimeout(function(){for(var arrayDate=[],arrayTitle=[],arrayContent=[],alldiv=document.getElementsByTagName(\"div\"),requiredDiv='<div data-theme=\"a\" style=\"margin:10px;background-color:#efefef\" class=\"masquerTransition boxShadow\">',cdtdiv=null,i=0;i<alldiv.length;i++){var outHTML=alldiv[i].outerHTML.replace(alldiv[i].innerHTML,\"\").replace(\"</div>\",\"\");outHTML.indexOf(requiredDiv)>-1&&(cdtdiv=alldiv[i])}alldiv=cdtdiv.getElementsByTagName(\"div\");for(var i=0;i<alldiv.length;i++){var concernedDiv=alldiv[i];if(0===alldiv[i].innerHTML.indexOf(\"pour\")){var currentDate=alldiv[i].innerHTML;concernedDiv=alldiv[i+1];for(var j=0;j<concernedDiv.getElementsByTagName(\"div\").length;j++)if(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\").length>0){arrayDate.push(currentDate),arrayTitle.push(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].innerHTML);var parentDiv=concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].parentElement;parentDiv.removeChild(parentDiv.getElementsByClassName(\"Gras\")[0]);for(var contentString=parentDiv.innerHTML;\" \"===contentString.charAt(0)||\"\\n\"===contentString.charAt(0);)contentString=contentString.substring(1,contentString.length);contentString=contentString.replace(/<a(?:.|\\n)*?>.*?>/gm,\"\"),contentString=contentString.replace(/<(?:.|\\n)*?>/gm,\"\"),contentString=contentString.replace(\"&\",\"&\"),contentString=contentString.replace(\"&nbsp;\",\" \"),arrayContent.push(contentString)}}}for(var l=0;l<arrayTitle.length;l++)htmlViewer.saveData(arrayDate[l],arrayTitle[l],arrayContent[l]);window.gotHomework = true;},2250);");
 
         getToday();
@@ -261,7 +258,7 @@ public class MainActivity extends AppCompatActivity
 
     public void getToday(){
 
-        webview.loadUrl("javascript:var todayInterval=setInterval(function(){window.gotHomework&&(console.log(\"getting Today\"),GInterface.Instances[2].Instances[0].idMenuOnglet.surclickOnglet(1,1),setTimeout(function(){for(var e=[],n=[],t=[],o=document.getElementsByClassName(\"BandeCours\"),a=0;a<o.length;a++)for(var r=o[a].getElementsByTagName(\"tr\"),l=0;l<r.length;l++){var s=r[l].getElementsByTagName(\"span\");0!==s.length&&(e.push(s[0].innerHTML+\" - \"+s[1].innerHTML),console.log(s[0].innerHTML+\" - \"+s[1].innerHTML),n.push(s[2].innerHTML.replace(\"&\",\"&\")),console.log(s[2].innerHTML.replace(\"&\",\"&\")),t.push(s[s.length-1].innerHTML),console.log(s[s.length-1].innerHTML))}for(var g=0;g<e.length;g++)htmlViewer.saveDataToday(t[g],e[g],n[g]);setTimeout(function(){htmlViewer.done()},2e3),window.hours=e},3e3),clearInterval(todayInterval))},500);");
+        webview.loadUrl("javascript:var todayInterval=setInterval(function(){window.gotHomework&&(console.log(\"getting Today\"),GInterface.Instances[2].Instances[0].idMenuOnglet.surclickOnglet(1,1),setTimeout(function(){for(var e=[],n=[],t=[],o=document.getElementsByClassName(\"BandeCours\"),a=0;a<o.length;a++)for(var r=o[a].getElementsByTagName(\"tr\"),l=0;l<r.length;l++){var s=r[l].getElementsByTagName(\"span\");0!==s.length&&(e.push(s[0].innerHTML+\" - \"+s[1].innerHTML),console.log(s[0].innerHTML+\" - \"+s[1].innerHTML),n.push(s[2].innerHTML.replace(\"&\",\"&\")),console.log(s[2].innerHTML.replace(\"&amp;\",\"&\")),t.push(s[s.length-1].innerHTML),console.log(s[s.length-1].innerHTML))}for(var g=0;g<e.length;g++)htmlViewer.saveDataToday(t[g],e[g],n[g]);setTimeout(function(){htmlViewer.done()},1.75e3)},1e3),clearInterval(todayInterval))},500);");
     }
 
     public void save() throws IOException {
@@ -320,12 +317,20 @@ public class MainActivity extends AppCompatActivity
                     arraySubjectToday,
                     arrayClassToday);
         } else if (id == R.id.nav_week) {
-
+            //TODO: Will this be synced ? I think it won't, and it will just save day-by-day. (See below)
+            //Each day the app syncs, it saves the schedule in the memory to a day-specific emplacement.
+            //Then once the week has been through, Just load schedule.
         } else if (id == R.id.nav_share) {
-
+            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            sharingIntent.setType("text/plain");
+            String shareBody = "https://github.com/FliiFe/ColbertPronote/releases/tag/v1.0-alpha";
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Colbert Pronote");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+            startActivity(Intent.createChooser(sharingIntent, "Partager avec"));
         } else if (id == R.id.nav_about) {
-
+            //TODO: About activity
         }
+        //TODO: Settings activity ! Support for Light/Dark Theme, behavior customization.
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
