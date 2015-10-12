@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -55,7 +56,9 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        THEME = settings.getInt("theme", 0);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        THEME = (sharedPref.getBoolean("storage_settings_dark_theme", false)) ? 1 : 0;
+
         if(settings.getBoolean("firstLaunch", true)){
 
             Intent login = new Intent(this, LoginActivity.class);

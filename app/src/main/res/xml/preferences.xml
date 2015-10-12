@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:title="PHONE"
-        android:key="pref_key_storage_settings">
+        android:title="Notifications"
+        android:key="storage_settings">
         <CheckBoxPreference
-            android:key="pref_key_auto_delete"
-            android:summary="Auto delete messages"
-            android:title="Auto delete"
-            android:defaultValue="false" />
-        <Preference
-            android:key="pref_key_sms_delete_limit"
-            android:dependency="pref_key_auto_delete"
-            android:summary="Remove all sms"
-            android:title="Delete sms" />
-        <Preference
-            android:key="pref_key_mms_delete_limit"
-            android:dependency="pref_key_auto_delete"
-            android:summary="Remove mms limit"
-            android:title="No Limit"  />
+            android:key="storage_settings_schedule_notifications"
+            android:summary="Activer les notifications d'emploi tu temps"
+            android:title="Notifications d'emploi du temps"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="storage_settings_silent_notifications"
+            android:dependency="storage_settings_schedule_notifications"
+            android:summary="Les notifications seront silencieuse"
+            android:title="Silencieuse"
+            android:defaultValue="true"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Apparence"
+        android:key="storage_settings">
+        <CheckBoxPreference
+            android:key="storage_settings_dark_theme"
+            android:summary="Utiliser le thème sombre au lieu du thème clair."
+            android:title="Thème sombre."
+            android:defaultValue="true" />
     </PreferenceCategory>
 
 </PreferenceScreen>
