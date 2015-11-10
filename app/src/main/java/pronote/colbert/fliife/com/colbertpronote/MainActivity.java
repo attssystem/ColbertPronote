@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity
     private String[] arrayClassToday;
     private String[] arrayHoursToday;
     private String[] arraySubjectToday;
+    public AlarmManagerBroadcastReceiver alarmManagerBroadcastReceiver = new AlarmManagerBroadcastReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,12 +58,12 @@ public class MainActivity extends AppCompatActivity
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        THEME = (sharedPref.getBoolean("storage_settings_dark_theme", false)) ? 1 : 0;
+        THEME = (sharedPref.getBoolean("storage_settings_dark_theme", false)) ? DARK : LIGHT;
 
         if(settings.getBoolean("firstLaunch", true)){
-
-            Intent login = new Intent(this, LoginActivity.class);
-            startActivityForResult(login, 1);
+            Intent introIntent = new Intent(this, LoginActivity.class);
+            introIntent.putExtra("firstLaunch", true);
+            startActivity(introIntent);
             settings.edit().putBoolean("firstLaunch", false).apply();
         }
         if(THEME == DARK){
@@ -81,6 +82,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 Intent loginIntent = new Intent(getApplicationContext(), LoginActivity.class);
+
+                loginIntent.putExtra("first", false);
                 startActivityForResult(loginIntent, 1);
             }
         });
@@ -100,7 +103,6 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         refreshEntries(1);
-
     }
 
     @Override
@@ -153,7 +155,7 @@ public class MainActivity extends AppCompatActivity
                 arrayDate = new String[((ArrayList<String>) ObjectSerializer.deserialize(dates)).size()];
                 arrayDate = ((ArrayList<String>) ObjectSerializer.deserialize(dates)).toArray(arrayDate);
 
-                // THIS CODE IS AWFUL. I DON'T KNOW HOW ELSE I CAN SAVE ARRAYS TO MEMORY. PS: I know the Caps. Lock key.
+                // THIS CODE IS AWFUL. I DON'T KNOW HOW ELSE I CAN SAVE ARRAYS TO MEMORY. PS: I know the Caps Lock key.
 
                 arraySubjectToday = new String[((ArrayList<String>) ObjectSerializer.deserialize(subject)).size()];
                 arraySubjectToday = ((ArrayList<String>) ObjectSerializer.deserialize(subject)).toArray(arraySubjectToday);
@@ -168,6 +170,8 @@ public class MainActivity extends AppCompatActivity
             setRecyclerContent(arrayTitle, arrayContent, arrayDate);
 
             mSwipeRefreshLayout.setRefreshing(false);
+
+            //alarmManagerBroadcastReceiver.setAlarm(this, arrayHoursToday);
         }
     }
 
@@ -334,7 +338,8 @@ public class MainActivity extends AppCompatActivity
             sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
             startActivity(Intent.createChooser(sharingIntent, "Partager avec"));
         } else if (id == R.id.nav_about) {
-            //TODO: About activity
+            startActivity(new Intent(this, AboutActivity.class));
+
         } else if(id == R.id.nav_settings){
             startActivity(new Intent(this, SettingsActivity.class));
         }

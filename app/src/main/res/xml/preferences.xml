@@ -11,7 +11,7 @@
         <CheckBoxPreference
             android:key="storage_settings_silent_notifications"
             android:dependency="storage_settings_schedule_notifications"
-            android:summary="Les notifications seront silencieuse"
+            android:summary="Les notifications seront silencieuses"
             android:title="Silencieuse"
             android:defaultValue="true"/>
     </PreferenceCategory>
@@ -22,7 +22,7 @@
             android:key="storage_settings_dark_theme"
             android:summary="Utiliser le thème sombre au lieu du thème clair."
             android:title="Thème sombre."
-            android:defaultValue="true" />
+            android:defaultValue="false" />
     </PreferenceCategory>
 
 </PreferenceScreen>
