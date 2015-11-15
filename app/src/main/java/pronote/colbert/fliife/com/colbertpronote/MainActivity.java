@@ -326,14 +326,14 @@ public class MainActivity extends AppCompatActivity
             setRecyclerContent(arrayHoursToday,
                     arraySubjectToday,
                     arrayClassToday);
-        } else if (id == R.id.nav_week) {
+        //} else if (id == R.id.nav_week) {
             //TODO: Will this be synced ? I think it won't, and it will just save day-by-day. (See below)
             //Each day the app syncs, it saves the schedule in the memory to a day-specific emplacement.
             //Then once the week has been through, Just load schedule.
         } else if (id == R.id.nav_share) {
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
-            String shareBody = "https://github.com/FliiFe/ColbertPronote/releases/tag/v1.0-alpha";
+            String shareBody = "Téléchargement : https://github.com/FliiFe/ColbertPronote/releases\nPlus d'informations : http://fliife.tk/colbert-pronote\nContributeurs : www.attssystem.xyz | www.fliife.tk";
             sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Colbert Pronote");
             sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
             startActivity(Intent.createChooser(sharingIntent, "Partager avec"));

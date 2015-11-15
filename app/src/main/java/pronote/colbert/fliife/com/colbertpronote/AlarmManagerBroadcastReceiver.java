@@ -23,7 +23,7 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_school_black_24dp)
-                        .setContentTitle((int)Math.floor(Math.random() * 100) + "")
+                        .setContentTitle("COLBERT Vous avez cours :")
                         .setContentText((int)Math.floor(Math.random()*100) + "");
         NotificationManager mNotificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -45,8 +45,8 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
 
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
 
-        am.set(AlarmManager.RTC, cal.getTimeInMillis(), pi);
-        //am.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), /*30 **/ 1000 * 60, pi);
+        //am.set(AlarmManager.RTC, cal.getTimeInMillis(), pi);
+        am.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 5 * 1000 * 60, pi);
     }
 
     public void cancelAlarm(Context context){
