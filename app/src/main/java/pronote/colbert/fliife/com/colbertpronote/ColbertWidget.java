@@ -68,6 +68,7 @@ public class ColbertWidget extends AppWidgetProvider {
             cal1.set(Calendar.HOUR_OF_DAY, Integer.parseInt(firstHour.split("h")[0]));
             cal1.set(Calendar.MINUTE, Integer.parseInt(firstHour.split("h")[1]));
 
+            System.out.println(cal1.getTime());
             Date firstHourTimeInMillis = cal1.getTime();
 
             Calendar cal2 = Calendar.getInstance();
@@ -77,13 +78,13 @@ public class ColbertWidget extends AppWidgetProvider {
             System.out.println(cal2.getTime());
             Date endHourTimeInMillis = cal2.getTime();
 
-            //Date nowTimeInMillis = System.currentTime();
-            //Following is for debug
+            Date nowTimeInMillis = new Date();
+            /*Following is for debug
             Calendar cal3 = Calendar.getInstance();
             cal3.set(Calendar.HOUR_OF_DAY, 16);
-            cal3.set(Calendar.MINUTE, 20);
-            System.out.println(cal3.getTime());
-            Date nowTimeInMillis = cal3.getTime();
+            cal3.set(Calendar.MINUTE, 20);*/
+            System.out.println(nowTimeInMillis);
+            //Date nowTimeInMillis = cal3.getTime();
 
             if(nowTimeInMillis.compareTo(firstHourTimeInMillis) >= 0 && nowTimeInMillis.compareTo(endHourTimeInMillis) <= 0){
                 views.setTextViewText(R.id.appwidget_text, arrayClassToday[count]);
