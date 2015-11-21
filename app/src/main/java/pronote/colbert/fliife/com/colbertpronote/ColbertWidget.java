@@ -67,14 +67,14 @@ public class ColbertWidget extends AppWidgetProvider {
             Calendar cal1 = Calendar.getInstance();
             cal1.set(Calendar.HOUR_OF_DAY, Integer.parseInt(firstHour.split("h")[0]));
             cal1.set(Calendar.MINUTE, Integer.parseInt(firstHour.split("h")[1]));
-
+			cal1 = removeMinutes(cal1, 15);
             System.out.println(cal1.getTime());
             Date firstHourTimeInMillis = cal1.getTime();
 
             Calendar cal2 = Calendar.getInstance();
             cal2.set(Calendar.HOUR_OF_DAY, Integer.parseInt(endHour.split("h")[0]));
             cal2.set(Calendar.MINUTE, Integer.parseInt(endHour.split("h")[1]));
-
+			cal2 = removeMinutes(cal2, 15);
             System.out.println(cal2.getTime());
             Date endHourTimeInMillis = cal2.getTime();
 
@@ -99,5 +99,15 @@ public class ColbertWidget extends AppWidgetProvider {
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
+	public static Calendar removeMinutes(Calendar calObject, int offset){
+		if(calObject.getTime().getMinutes() >= offset){
+			calObject.set(Calendar.MINUTE, calObject.getTime().getMinutes()-offset);
+			return calObject;
+		}else{
+			calObject.set(Calendar.HOUR_OF_DAY, calObject.getTime().getHours()-1);
+			calObject.set(Calendar.MINUTE, calObject.getTime().getMinutes()+60-offset);
+			return calObject;
+		}
+	}
 }
 

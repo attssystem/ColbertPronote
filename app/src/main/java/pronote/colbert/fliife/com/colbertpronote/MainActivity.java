@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<String> arrayDateSync = new ArrayList<>();
     public ArrayList<String> arrayContentSync = new ArrayList<>();
     private String username = "";
+	public String defaultUrl = "http://etablissement.lyceecolbert-tg.org/pronote/mobile.eleve.html";
     private String password = "";
     private ArrayList<String> arrayClassTodaySync = new ArrayList<>();
     private ArrayList<String> arraySubjectTodaySync = new ArrayList<>();
@@ -63,6 +64,8 @@ public class MainActivity extends AppCompatActivity
         if(settings.getBoolean("firstLaunch", true)){
             Intent introIntent = new Intent(this, LoginActivity.class);
             introIntent.putExtra("firstLaunch", true);
+			getSharedPreferences("URL", 0).edit().putString("url", defaultUrl).apply();
+			
             startActivity(introIntent);
             settings.edit().putBoolean("firstLaunch", false).apply();
         }
@@ -255,7 +258,8 @@ public class MainActivity extends AppCompatActivity
         });
         // Simplest usage: note that an exception will NOT be thrown
         // if there is an error loading this page (see below).
-        webview.loadUrl("http://etablissement.lyceecolbert-tg.org/pronote/mobile.eleve.html");
+		
+        webview.loadUrl(getSharedPreferences("URL", 0).getString("url", defaultUrl));
     }
 
     public void getCDT(){
