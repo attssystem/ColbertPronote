@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity
         if(settings.getBoolean("firstLaunch", true)){
             Intent introIntent = new Intent(this, LoginActivity.class);
             introIntent.putExtra("firstLaunch", true);
-			getSharedPreferences("URL", 0).edit().putString("url", defaultUrl).apply();
 			
             startActivity(introIntent);
             settings.edit().putBoolean("firstLaunch", false).apply();
@@ -259,7 +258,7 @@ public class MainActivity extends AppCompatActivity
         // Simplest usage: note that an exception will NOT be thrown
         // if there is an error loading this page (see below).
 		
-        webview.loadUrl(getSharedPreferences("URL", 0).getString("url", defaultUrl));
+        webview.loadUrl(getPreferences(0).getString("storage_setting_URL", defaultUrl));
     }
 
     public void getCDT(){

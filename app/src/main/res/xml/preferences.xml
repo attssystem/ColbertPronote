@@ -24,5 +24,14 @@
             android:title="Thème sombre."
             android:defaultValue="false" />
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Apparence"
+        android:key="storage_settings">
+        <EditTextPreference
+            android:key="storage_settings_URL"
+            android:summary="Ne changez ceci que si vous savez ce que vous faites."
+            android:title="URL de connexion."
+            android:defaultValue="http://etablissement.lyceecolbert-tg.org/pronote/mobile.eleve.html" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

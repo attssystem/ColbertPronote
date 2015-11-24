@@ -58,6 +58,7 @@ public class ColbertWidget extends AppWidgetProvider {
             e.printStackTrace();
         }
         int count=0;
+        boolean hasFoundSomething = false;
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.colbert_widget);
         for(String hour: arrayHoursToday){
             String firstHour = hour.split(" - ")[0];
@@ -88,10 +89,13 @@ public class ColbertWidget extends AppWidgetProvider {
 
             if(nowTimeInMillis.compareTo(firstHourTimeInMillis) >= 0 && nowTimeInMillis.compareTo(endHourTimeInMillis) <= 0){
                 views.setTextViewText(R.id.appwidget_text, arrayClassToday[count]);
+                hasFoundSomething = true;
             }
             count++;
         }
-
+        if(!hasFoundSomething){
+            views.setTextViewText(R.id.appwidget_text, "");
+        }
         //CharSequence widgetText = context.getString(R.string.appwidget_text);
         // Construct the RemoteViews object
         //views.setTextViewText(R.id.appwidget_text, widgetText);
