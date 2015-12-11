@@ -38,7 +38,7 @@ public class ColbertWidget extends AppWidgetProvider {
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
 
-        SharedPreferences sp = context.getSharedPreferences("CONTENT", 0);
+        SharedPreferences sp = context.getSharedPreferences(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) + "", 0);
         String emptyArray = "";
         try {
             emptyArray = ObjectSerializer.serialize(new ArrayList<String>());

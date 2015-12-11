@@ -23,7 +23,7 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_school_black_24dp)
-                        .setContentTitle("COLBERT Vous avez cours :")
+                        .setContentTitle("COLBERT Vous avez cours :") //Change needed ? Awkward title...
                         .setContentText((int)Math.floor(Math.random()*100) + "");
         NotificationManager mNotificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -62,5 +62,5 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
     public int stringToMinute(String hour){
         return Integer.parseInt(hour.split("h")[1]);
     }
-    //TODO: add method to set hours. (Update every half hour || Update on specified hours)
+    //TODO: Copy Widget logic. Apply for notifications
 }

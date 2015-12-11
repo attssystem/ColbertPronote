@@ -1,8 +1,11 @@
 package pronote.colbert.fliife.com.colbertpronote;
 
+import android.app.DownloadManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -11,6 +14,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,8 +26,15 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -32,10 +43,12 @@ public class MainActivity extends AppCompatActivity
     private int LIGHT = 0;
     private int DARK = 1;
     public int THEME = LIGHT;
+    public final static String version = "v1.2";
     public String[] arrayTitle;
     public String[] arrayDate;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     public WebView webview;
+    public Context context = this;
     public boolean assumeLoggedIn = false;
     public String PREFS_NAME = "CONTENT";
 
@@ -105,6 +118,63 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         refreshEntries(1);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                URL url = null;
+                try {
+                    url = new URL("https://api.github.com/repos/FliiFe/ColbertPronote/releases/latest");
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                String out = "";
+                try {
+                    assert url != null;
+                    out = new Scanner(url.openStream(), "UTF-8").useDelimiter("\\A").next();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    final JSONObject jsonObject = new JSONObject(out);
+                    if(!jsonObject.getString("tag_name").equals(version)){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                new AlertDialog.Builder(context)
+                                        .setTitle("Une mise à jour est disponible.")
+                                        .setMessage("Voulez vous télécharger la mise à jour ?")
+                                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                                                DownloadManager.Request request = null;
+                                                String downloadURL = null;
+                                                try {
+                                                    downloadURL = jsonObject.getJSONArray("assets").getJSONObject(0).getString("browser_download_url");
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                System.out.println(downloadURL);
+                                                request = new DownloadManager.Request(
+                                                    Uri.parse(downloadURL));
+
+                                                dm.enqueue(request);
+                                            }
+                                        })
+                                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+
+                                            }
+                                        })
+                                        .show();
+                            }
+                        });
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -136,6 +206,8 @@ public class MainActivity extends AppCompatActivity
             sync();
         }else if(step == 1) {
             SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+            SharedPreferences sched = getSharedPreferences(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) + "", 0);
             String emptyArray = "";
             try {
                 emptyArray = ObjectSerializer.serialize(new ArrayList<String>());
@@ -145,9 +217,9 @@ public class MainActivity extends AppCompatActivity
             String contents = settings.getString("content", emptyArray);
             String titles = settings.getString("title", emptyArray);
             String dates = settings.getString("date", emptyArray);
-            String subject = settings.getString("subject", emptyArray);
-            String hours = settings.getString("hours", emptyArray);
-            String claSs = settings.getString("class", emptyArray);
+            String subject = sched.getString("subject", emptyArray);
+            String hours = sched.getString("hours", emptyArray);
+            String claSs = sched.getString("class", emptyArray);
             try {
 
                 arrayContent = new String[((ArrayList<String>) ObjectSerializer.deserialize(contents)).size()];
@@ -264,7 +336,7 @@ public class MainActivity extends AppCompatActivity
     public void getCDT(){
         System.out.println("Getting homeworks");
 
-        webview.loadUrl("javascript:window.gotHomework = false;setTimeout(function(){for(var arrayDate=[],arrayTitle=[],arrayContent=[],alldiv=document.getElementsByTagName(\"div\"),requiredDiv='<div data-theme=\"a\" style=\"margin:10px;background-color:#efefef\" class=\"masquerTransition boxShadow\">',cdtdiv=null,i=0;i<alldiv.length;i++){var outHTML=alldiv[i].outerHTML.replace(alldiv[i].innerHTML,\"\").replace(\"</div>\",\"\");outHTML.indexOf(requiredDiv)>-1&&(cdtdiv=alldiv[i])}alldiv=cdtdiv.getElementsByTagName(\"div\");for(var i=0;i<alldiv.length;i++){var concernedDiv=alldiv[i];if(0===alldiv[i].innerHTML.indexOf(\"pour\")){var currentDate=alldiv[i].innerHTML;concernedDiv=alldiv[i+1];for(var j=0;j<concernedDiv.getElementsByTagName(\"div\").length;j++)if(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\").length>0){arrayDate.push(currentDate),arrayTitle.push(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].innerHTML);var parentDiv=concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].parentElement;parentDiv.removeChild(parentDiv.getElementsByClassName(\"Gras\")[0]);for(var contentString=parentDiv.innerHTML;\" \"===contentString.charAt(0)||\"\\n\"===contentString.charAt(0);)contentString=contentString.substring(1,contentString.length);contentString=contentString.replace(/<a(?:.|\\n)*?>.*?>/gm,\"\"),contentString=contentString.replace(/<(?:.|\\n)*?>/gm,\"\"),contentString=contentString.replace(\"&\",\"&\"),contentString=contentString.replace(\"&nbsp;\",\" \"),arrayContent.push(contentString)}}}for(var l=0;l<arrayTitle.length;l++)htmlViewer.saveData(arrayDate[l],arrayTitle[l],arrayContent[l]);window.gotHomework = true;},2250);");
+        webview.loadUrl("javascript:window.gotHomework = false;setTimeout(function(){for(var arrayDate=[],arrayTitle=[],arrayContent=[],alldiv=document.getElementsByTagName(\"div\"),requiredDiv='<div data-theme=\"a\" style=\"margin:10px;background-color:#efefef\" class=\"masquerTransition boxShadow\">',cdtdiv=null,i=0;i<alldiv.length;i++){var outHTML=alldiv[i].outerHTML.replace(alldiv[i].innerHTML,\"\").replace(\"</div>\",\"\");outHTML.indexOf(requiredDiv)>-1&&(cdtdiv=alldiv[i])}alldiv=cdtdiv.getElementsByTagName(\"div\");for(var i=0;i<alldiv.length;i++){var concernedDiv=alldiv[i];if(0===alldiv[i].innerHTML.indexOf(\"pour\")){var currentDate=alldiv[i].innerHTML;concernedDiv=alldiv[i+1];for(var j=0;j<concernedDiv.getElementsByTagName(\"div\").length;j++)if(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\").length>0){arrayDate.push(currentDate),arrayTitle.push(concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].innerHTML);var parentDiv=concernedDiv.getElementsByTagName(\"div\")[j].getElementsByClassName(\"Gras\")[0].parentElement;parentDiv.removeChild(parentDiv.getElementsByClassName(\"Gras\")[0]);for(var contentString=parentDiv.innerHTML;\" \"===contentString.charAt(0)||\"\\n\"===contentString.charAt(0);)contentString=contentString.substring(1,contentString.length);contentString=contentString.replace(/<a(?:.|\\n)*?>.*?>/gm,\"\"),contentString=contentString.replace(/<(?:.|\\n)*?>/gm,\"\"),contentString=contentString.replace(\"&amp;\",\"&\"),contentString=contentString.replace(\"&nbsp;\",\" \"),contentString=contentString.replace(\"&gt;\",\">\"),contentString=contentString.replace(\"&lt;\",\"<\"),arrayContent.push(contentString)}}}for(var l=0;l<arrayTitle.length;l++)htmlViewer.saveData(arrayDate[l],arrayTitle[l],arrayContent[l]);window.gotHomework = true;},2250);");
 
         getToday();
     }
@@ -276,14 +348,16 @@ public class MainActivity extends AppCompatActivity
 
     public void save() throws IOException {
         SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
+        SharedPreferences.Editor schedEditor = getSharedPreferences(Calendar.getInstance().get(Calendar.DAY_OF_WEEK) + "", Context.MODE_PRIVATE).edit();
 
         editor.putString("content", ObjectSerializer.serialize(arrayContentSync));
         editor.putString("title", ObjectSerializer.serialize(arrayTitleSync));
         editor.putString("date", ObjectSerializer.serialize(arrayDateSync));
-        editor.putString("subject", ObjectSerializer.serialize(arraySubjectTodaySync));
-        editor.putString("hours", ObjectSerializer.serialize(arrayHoursTodaySync));
-        editor.putString("class", ObjectSerializer.serialize(arrayClassTodaySync));
+        schedEditor.putString("subject", ObjectSerializer.serialize(arraySubjectTodaySync));
+        schedEditor.putString("hours", ObjectSerializer.serialize(arrayHoursTodaySync));
+        schedEditor.putString("class", ObjectSerializer.serialize(arrayClassTodaySync));
         editor.apply();
+        schedEditor.apply();
         System.out.println("Done !");
         runOnUiThread(new Runnable() {
             @Override
