@@ -410,7 +410,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
-            String shareBody = "Téléchargement : https://github.com/FliiFe/ColbertPronote/releases\nPlus d'informations : http://fliife.tk/colbert-pronote\nContributeurs : www.attssystem.xyz | www.fliife.tk";
+            String shareBody = "Téléchargement : https://github.com/FliiFe/ColbertPronote/releases\nPlus d'informations : http://fliife.tk/colbert-pronote\nContributeurs :\nFliife www.fliife.xyz\nATTSSystem www.attssystem.xyz";
             sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Colbert Pronote");
             sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
             startActivity(Intent.createChooser(sharingIntent, "Partager avec"));

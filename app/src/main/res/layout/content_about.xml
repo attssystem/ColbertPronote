@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/text1"
         android:autoLink="all"
-        android:text="Librairies :\n-CoolIntro\n-Android Support v7\n-Android Support CardView\n-Android Support RecyclerView\n-Android Support Design\n\nContributeurs :\n-Fliife\nwww.fliife.tk\n-ATTSSystem\nwww.attssystem.xyz"
+        android:text="Librairies :\n-CoolIntro\n-Android Support v7\n-Android Support CardView\n-Android Support RecyclerView\n-Android Support Design\n\nContributeurs :\n-Fliife\nwww.fliife.xyz\n-ATTSSystem\nwww.attssystem.xyz"
         android:textSize="20sp"
         android:textIsSelectable="true" />
 
